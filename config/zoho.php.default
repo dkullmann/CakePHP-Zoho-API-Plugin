@@ -1,0 +1,7 @@
+<?php
+$config['Zoho'] = array(
+	'api_key' => '6H-shNjnMgh*YjlfHtEBlAXuixzkjpV2kQaMGWeIdlI$',
+	'zsc_key' => '0dc69aa4c10f4a7dcd5e2f4cd6cddd42',
+	'zsc_email' => 'david@expertinsight.com'
+);
+?>
