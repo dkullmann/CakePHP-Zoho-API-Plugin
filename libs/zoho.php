@@ -42,6 +42,20 @@ class Zoho {
  * @var string
  */
 	public $serviceName = 'ZohoCRM';
+
+/**
+ * Zoho XML style Header
+ *
+ * @var string
+ */
+	protected $_xmlHeader = '<%s>';
+
+/**
+ * Zoho XML style footer (close tag)
+ *
+ * @var string
+ */
+	protected $_xmlFooter = '</%s>';
 	
 /**
  * Load the configuration, allow overriding of defaults
@@ -146,22 +160,26 @@ class Zoho {
 	public function mapData($fields = array(), $data = array()) {
 		$return = array();
 
-		foreach ($fields as $modelField => $zohoField) {
-
-			if (strpos($modelField, '.') !== false) {
-				list ($model, $field) = split('\.', $modelField);
+		foreach ($data as $key => $value) {
+			if (is_numeric($key)) {
+				$return[] = $this->mapData($fields, $value);
 			} else {
-				$field = $modelField;
-			}
-						
-			if (isset($model) && !empty($data[$model][$field])) {
-				$return[$zohoField] = $data[$model][$field];
-			} else if (!empty($data[$field])) {
-				$return[$zohoField] = $data[$field];
-			}
-			
+				foreach ($fields as $modelField => $zohoField) {
+					if (strpos($modelField, '.') !== false) {
+						list ($model, $field) = split('\.', $modelField);
+					} else {
+						$field = $modelField;
+					}
+
+					if (isset($model) && !empty($data[$model][$field])) {
+						$return[$zohoField] = $data[$model][$field];
+					} else if (!empty($data[$field])) {
+						$return[$zohoField] = $data[$field];
+					}
+				}
+			}	
 		}
-		
+				
 		return $return;
 	}
 
@@ -175,17 +193,50 @@ class Zoho {
  * @todo - Add support for multiple rows
  */
 	public function toZohoXml($module = null, $data = array()) {
-		$xml = "<$module>";
-		$xml .= '<row no="1">';
+		
+		$xmlHeader  = $this->xmlHeader($module);
+		$xmlContent = $this->xmlContent($data);
+		$xmlFooter  = $this->xmlFooter($module);
+		
+		return implode("\n", array($xmlHeader, $xmlContent, $xmlFooter));
+	}
+	
+	public function xmlHeader($module = null) {
+		return sprintf($this->_xmlHeader, $module);
+	}
+	
+	public function xmlContent($data = array()) {
+		
+		$xml = '';
+		$xmlRows = array();
+		
+		$rows = $this->xmlRows($data);
+		
+		for ($i = 0; $i < count($rows); $i++) {
+			$row = sprintf('<row no="%s">', $i + 1);
+			$content = implode("\n", $rows[$i]);
+			$xmlRows[] = implode("\n", array($row, $content, '</row>'));
+		}
+		$xml = implode("\n", $xmlRows);
+		return $xml;
+	}
+	
+	public function xmlRows($data = array()) {
+		
+		$rows = array();
 		
 		foreach ($data as $field => $value) {
-			$xml .= sprintf('<FL val="%s">%s</FL>', $field, $value);
+			if (is_numeric($field)) {
+				$rows[] = $this->xmlRows($value);
+			} else {
+				$rows[] = sprintf('<FL val="%s">%s</FL>', $field, $value);
+			}
 		}
-		
-		$xml .= '</row>';
-		$xml .= "</$module>";
-		
-		return $xml;
+		return $rows;
+	}
+	
+	public function xmlFooter($module = null) {
+		return sprintf($this->_xmlFooter, $module);
 	}
 
 /**
