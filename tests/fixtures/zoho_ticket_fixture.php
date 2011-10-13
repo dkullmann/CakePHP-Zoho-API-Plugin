@@ -15,7 +15,7 @@ class ZohoTicketFixture extends CakeTestFixture {
 	var $records = array(
 		array(
 			'id' => '4e95e6b2-6124-4278-9e3b-40d179cafc24',
-			'ticket_number' => 'Lorem ipsum dolor sit amet',
+			'ticket_number' => '32digitIdsShouldGoHereDavidRules',
 			'modified' => '2011-10-12 19:12:50',
 			'created' => '2011-10-12 19:12:50'
 		),

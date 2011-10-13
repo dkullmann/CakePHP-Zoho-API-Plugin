@@ -44,18 +44,18 @@ class Zoho {
 	public $serviceName = 'ZohoCRM';
 
 /**
- * Zoho XML style Header
+ * Zoho XML style open tag
  *
  * @var string
  */
-	protected $_xmlHeader = '<%s>';
+	protected $_xmlOpen = '<%s>';
 
 /**
- * Zoho XML style footer (close tag)
+ * Zoho XML style close tag
  *
  * @var string
  */
-	protected $_xmlFooter = '</%s>';
+	protected $_xmlClose = '</%s>';
 	
 /**
  * Load the configuration, allow overriding of defaults
@@ -153,7 +153,7 @@ class Zoho {
  *
  * @param array $fields CakePHP model data => Zoho field map
  * @param array $data Array of CakePHP model data
- * @return void
+ * @return array Single dimension array of data usable by Zoho::toZohoXml()
  * @author David Kullmann
  * @todo - Add support for multiple rows
  */
@@ -170,7 +170,6 @@ class Zoho {
 					} else {
 						$field = $modelField;
 					}
-
 					if (isset($model) && !empty($data[$model][$field])) {
 						$return[$zohoField] = $data[$model][$field];
 					} else if (!empty($data[$field])) {
@@ -194,17 +193,32 @@ class Zoho {
  */
 	public function toZohoXml($module = null, $data = array()) {
 		
-		$xmlHeader  = $this->xmlHeader($module);
+		$xmlOpen    = $this->xmlOpen($module);
 		$xmlContent = $this->xmlContent($data);
-		$xmlFooter  = $this->xmlFooter($module);
+		$xmlClose   = $this->xmlClose($module);
 		
-		return implode("\n", array($xmlHeader, $xmlContent, $xmlFooter));
+		return implode("\n", array($xmlOpen, $xmlContent, $xmlClose));
 	}
-	
-	public function xmlHeader($module = null) {
-		return sprintf($this->_xmlHeader, $module);
+
+/**
+ * Create XML open tag
+ *
+ * @param string $module Zoho module name
+ * @return string Xml open tag
+ * @author David Kullmann
+ */
+	public function xmlOpen($module = null) {
+		return sprintf($this->_xmlOpen, $module);
 	}
-	
+
+/**
+ * Converts mapData formatted data to xml content for Zoho API
+ *
+ * @param array $data mapData formatted array
+ * @return string XML content
+ * @author David Kullmann
+ * @see https://zohocrmapi.wiki.zoho.com/API-Methods.html
+ */
 	public function xmlContent($data = array()) {
 		
 		$xml = '';
@@ -220,7 +234,14 @@ class Zoho {
 		$xml = implode("\n", $xmlRows);
 		return $xml;
 	}
-	
+
+/**
+ * Recursively creates XML rows, or a single XML row, for the XML content
+ *
+ * @param array $data mapData formatted array
+ * @return array Array of rows, each containing an array of values
+ * @author David Kullmann
+ */
 	public function xmlRows($data = array()) {
 		
 		$rows = array();
@@ -234,36 +255,16 @@ class Zoho {
 		}
 		return $rows;
 	}
-	
-	public function xmlFooter($module = null) {
-		return sprintf($this->_xmlFooter, $module);
-	}
 
 /**
- * updates one or more records in ZohoCRM
+ * Create XML close tag
  *
- * @param string $module Zoho module name  
- * @param string $xml XML string to POST
- * @param array $options Optional settings
- * @return void
+ * @param string $module Zoho module name
+ * @return string XML close tag
  * @author David Kullmann
  */
-	public function updateRecords($module = null, $xml = string, $options = array()) {
-		if (empty($module)) {
-			throw new Exception('No module name provided for update');
-		}
-		
-		$dataType = 'xml';
-		
-		if (isset($options['dataType'])) {
-			$dataType = $options['dataType'];
-		}
-		
-		$uri = sprintf($this->url['action'], $dataType, $module, 'updateRecords');
-	
-		$response = $this->_zohoRequest($uri, array('xmlData' => $xml));
-		
-		debug($response);
+	public function xmlClose($module = null) {
+		return sprintf($this->_xmlClose, $module);
 	}
 	
 /**

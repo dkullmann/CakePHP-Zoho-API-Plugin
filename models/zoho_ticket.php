@@ -105,12 +105,12 @@ class ZohoTicket extends ZohoAppModel {
  * @return void
  * @author David Kullmann
  */
-	public function updateRecords($module = null, $fields = array(), $data = array()) {
+	public function saveRecords($module = null, $fields = array(), $data = array()) {
 		
 		$raw = $this->Zoho->mapData($fields, $data);
 
 		$xml = $this->Zoho->toZohoXml($module, $raw);
-		
+				
 		$this->Zoho->insertRecords($module, $xml);
 	}
 	
