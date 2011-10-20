@@ -93,7 +93,11 @@ class ZohoTicket extends ZohoAppModel {
 			$query['conditions'][] = array('created >' => date('Y-m-d H:i:s', $expires));
 			return $query;
 		} else if ($state == 'after') {
-			return $results[0];
+			if (!empty($results[0])) {
+				return $results[0];				
+			} else {
+				return array();
+			}
 		}
 		
 	}
