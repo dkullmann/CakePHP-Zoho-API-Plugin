@@ -125,6 +125,10 @@ class Zoho {
  */
 	protected function _zohoRequest($uri = null, $query = array(), $request = array()) {
 		
+		if (!isset($query['LOGIN_ID']) && empty($this->config['ticket'])) {
+			throw new InvalidArgumentException('Expected a LOGIN_ID or a ticket to be set for Zoho API calls');
+		}
+		
 		/* Defaults for request, make sure to use HTTPS */
 		$request = array_merge(array(
 			'port' => 443,

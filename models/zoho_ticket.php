@@ -112,6 +112,9 @@ class ZohoTicket extends ZohoAppModel {
 	public function saveRecords($module = null, $fields = array(), $data = array()) {
 		
 		$raw = $this->Zoho->mapData($fields, $data);
+		
+		// No fields need to be updated
+		if (empty($raw)) { return false; }
 
 		$xml = $this->Zoho->toZohoXml($module, $raw);
 				
